@@ -1,0 +1,22 @@
+Metro Discover - Stack Technique et Bonnes Pratiques 2025
+Stack technique principale
+	•	Flutter 3.29+ avec Dart 3.7+ : dernière version stable, support null safety, UI moderne, haute performance.
+	•	Cible multiplateforme uniquement Android & iOS avec un projet Flutter unifié, retirant dossiers desktop/web inutiles.
+	•	Gestion d’état avec Riverpod : scalable, testable, idéal pour architectures MVVM/Clean.
+	•	Navigation déclarative avec GoRouter : routes nommées, centralisées, gestion d’erreurs aisée.
+	•	Cartographie avec flutter_map + OpenStreetMap : affichage stations métro, cache local tuiles pour offline complet.
+	•	Stockage local avec Hive / SQLite pour données utilisateur (check-in, progression, badges), fonctionnement offline-first.
+	•	Deep linking vers apps tierces (Citymapper, Google Maps, Apple Plans) pour navigation externe.
+	•	Fichiers JSON locaux pour anecdotes et informations statiques des stations.
+	•	Architecture MVVM / Clean Architecture : séparation claire UI, logique métier (usecases), données (repository pattern).
+	•	Thème cohérent et moderne adapté à public jeune et urbain, avec modes clair et sombre.
+Bonnes pratiques clés 2025
+	•	Architecture feature-first, chaque domaine métier (carte, station, profil, défis…) a ses dossiers UI, logique, données.
+	•	Centralisation dans core/ (thème, constantes, services, route config) pour éviter duplication.
+	•	Utilisation de Riverpod et StateNotifier pour un état isolé, testable, et logique métier fiable.
+	•	Providers et UseCases isolent la logique métier des détails UI et de la persistance locale.
+	•	MVP complètement offline-first, avec cache robuste et modèle de données stable.
+	•	MVP simple : pas d’anti-triche, interface intuitive, roadmap claire vers backend cloud phase 2.
+	•	Structure pour faciliter passage développement solo → équipe (code clair, séparation responsabilités).
+	•	GoRouter pour une navigation déclarative évolutive et facile à maintenir.
+	•	Tests unitaires et widget tests facilités par cette séparation MVVM et Riverpod.

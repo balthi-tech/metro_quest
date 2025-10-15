@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:metro_quest/core/router/error_page.dart';
 import 'package:metro_quest/features/data_loading/presentation/data_loading_page.dart';
 import 'package:metro_quest/features/home/presentation/home_page.dart';
+import 'package:metro_quest/features/line_detail/presentation/line_presentation_page.dart';
+import 'package:metro_quest/features/lines/presentation/metro_lines_page.dart';
+import 'package:metro_quest/features/station_detail/presentation/station_presentation_page.dart';
 
 final routerProvider = Provider<GoRouter>(
   (ref) {
@@ -17,24 +20,104 @@ final routerProvider = Provider<GoRouter>(
           pageBuilder: (context, state) => const MaterialPage(child: DataLoadingPage()),
         ),
 
-        GoRoute(
-          path: '/',
-          name: 'home',
-          pageBuilder: (context, state) => const MaterialPage(child: HomePage()),
+        ShellRoute(
+          builder: (context, state, child) {
+            return ScaffoldWithTabs(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: '/',
+              name: 'home',
+              pageBuilder: (_, _) => NoTransitionPage(child: HomePage()),
+            ),
+            GoRoute(
+              path: '/lines',
+              pageBuilder: (_, _) => NoTransitionPage(child: MetroLinesPage()),
+            ),
+            // GoRoute(
+            //   path: '/settings',
+            //   pageBuilder: (_, _) => NoTransitionPage(child: _tabs[2]),
+            // ),
+          ],
         ),
 
-        // GoRoute(
-        //   path: '/station/:id',
-        //   name: 'stationDetail',
-        //   pageBuilder: (context, state) {
-        //     final id = state.params['id']!;
-        //     return MaterialPage(child: StationDetailScreen(stationId: id));
-        //   },
-        // ),
-        // Ajouter d'autres routes ici (ex: discovery, challenges, settings)
+        GoRoute(
+          path: '/line/:id',
+          name: 'lineDetail',
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return MaterialPage(child: LinePresentationPage(lineId: id));
+          },
+        ),
+        GoRoute(
+          path: '/station/:id',
+          name: 'stationDetail',
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return MaterialPage(child: StationDetailPage(stationId: id));
+          },
+        ),
       ],
-      // Optional: error page
       errorPageBuilder: (context, state) => MaterialPage(child: ErrorPage()),
     );
   },
 );
+
+class ScaffoldWithTabs extends StatefulWidget {
+  final Widget child;
+  const ScaffoldWithTabs({required this.child, super.key});
+
+  @override
+  _ScaffoldWithTabsState createState() => _ScaffoldWithTabsState();
+}
+
+class _ScaffoldWithTabsState extends State<ScaffoldWithTabs> {
+  int _currentIndex = 0;
+
+  static const _locationToIndex = {
+    '/': 0,
+    '/lines': 1,
+  };
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final location = GoRouter.of(context).state.path;
+
+    _currentIndex = _locationToIndex[location] ?? 0;
+  }
+
+  void _onTabTapped(int index) {
+    if (index != _currentIndex) {
+      switch (index) {
+        case 0:
+          context.go('/');
+
+          break;
+        case 1:
+          context.go('/lines');
+          break;
+      }
+
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: widget.child,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.linear_scale), label: 'Lines'),
+          // BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+        ],
+      ),
+    );
+  }
+}

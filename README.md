@@ -16,6 +16,9 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 
+## Google maps Api Key
+- [Secure Storage for API KEY](https://tech.appunite.com/posts/how-to-securely-use-google-maps-api-key-in-android-i-os-or-flutter-project)
+
 ## Dictionaire
 
 - DTO -> “Data Transfer Object” : données brutes reçues d’une API, d'une source externe ou fichier local

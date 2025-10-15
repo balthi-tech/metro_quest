@@ -1,5 +1,5 @@
 import 'package:metro_quest/domain/entities/station_entity.dart';
-import 'package:metro_quest/domain/repositories/station_repository.dart';
+import 'package:metro_quest/domain/repositories/stations_repository.dart';
 
 class GetStationsUseCase {
   final StationRepository repository;

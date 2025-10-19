@@ -1,9 +1,9 @@
 import 'package:metro_quest/core/utils/csv_parser.dart';
-import 'package:metro_quest/data/models/station_dto.dart';
+import 'package:metro_quest/data/models/metro_station_dto.dart';
 import 'package:metro_quest/domain/entities/fact_entity.dart';
 
 abstract class StationDataSource {
-  Future<List<StationDTO>> fetchStationDTOs();
+  Future<List<MetroStationDto>> fetchMetroStationDTOs();
   Future<Map<String, Fact>> fetchFunFacts();
   Future<Map<String, Fact>> fetchHistoryFacts();
 }
@@ -22,17 +22,17 @@ class StationLocalDataSource implements StationDataSource {
   });
 
   @override
-  Future<List<StationDTO>> fetchStationDTOs() async {
+  Future<List<MetroStationDto>> fetchMetroStationDTOs() async {
     final rows = await csvParser.loadCsvFromAsset(metroStationsCsvPath, ';');
     final headers = rows.first;
-    final List<StationDTO> dtos = [];
+    final List<MetroStationDto> dtos = [];
 
     for (int i = 1; i < rows.length; i++) {
       final rowMap = csvParser.mapRowToHeader(headers, rows[i]);
-      dtos.add(StationDTO.fromCsv(rowMap));
+      dtos.add(MetroStationDto.fromCsv(rowMap));
     }
 
-    final uniqueDtos = <String, StationDTO>{};
+    final uniqueDtos = <String, MetroStationDto>{};
     for (var dto in dtos) {
       final key = '${dto.stopName}-${dto.routeLongName}';
       if (!uniqueDtos.containsKey(key)) {

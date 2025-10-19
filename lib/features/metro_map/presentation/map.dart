@@ -6,13 +6,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:metro_quest/core/extensions/geo_point_extension.dart';
 import 'package:metro_quest/domain/entities/metro_line_segment_entity.dart';
 import 'package:metro_quest/domain/entities/metro_line_entity.dart';
-import 'package:metro_quest/domain/entities/station_entity.dart';
+import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 import 'package:metro_quest/features/lines/logic/line_provider.dart';
 import 'package:metro_quest/features/metro_map/logic/metro_map_controller.dart';
 import 'package:metro_quest/features/metro_map/logic/metro_map_provider.dart';
 
 class MetroMap extends ConsumerWidget {
-  final List<Station> stations;
+  final List<MetroStation> stations;
   const MetroMap({super.key, required this.stations});
 
   @override
@@ -84,7 +84,7 @@ class MetroMap extends ConsumerWidget {
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             markers: state.markers,
-            initialCameraPosition: CameraPosition(target: LatLng(48.8566, 2.3522), zoom: 15),
+            initialCameraPosition: CameraPosition(target: controller.initialPosition, zoom: 15),
             cameraTargetBounds: CameraTargetBounds(controller.petiteCouronneBounds),
             minMaxZoomPreference: MinMaxZoomPreference(12, 18),
             onMapCreated: controller.setMapController,
@@ -95,7 +95,7 @@ class MetroMap extends ConsumerWidget {
               ClusterManager(
                 clusterManagerId: ClusterManagerId("metro_stations"),
                 onClusterTap: (cluster) {
-                  print('Cluster tapped: contains ${cluster.count} items');
+                  // print('Cluster tapped: contains ${cluster.count} items');
                 },
               ),
             },

@@ -1,5 +1,5 @@
 import 'package:metro_quest/data/sources/stations_datasource.dart';
-import 'package:metro_quest/domain/entities/station_entity.dart';
+import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 import 'package:metro_quest/domain/repositories/stations_repository.dart';
 
 class StationRepositoryImpl implements StationRepository {
@@ -8,13 +8,11 @@ class StationRepositoryImpl implements StationRepository {
   StationRepositoryImpl({required this.stationDataSource});
 
   @override
-  Future<List<Station>> getAllStations() async {
-    final dtos = await stationDataSource.fetchStationDTOs();
+  Future<List<MetroStation>> getAllStations() async {
+    final dtos = await stationDataSource.fetchMetroStationDTOs();
 
     final funFactsMap = await stationDataSource.fetchFunFacts();
     final historyFactsMap = await stationDataSource.fetchHistoryFacts();
-
-    print('Fetched ${dtos.length} stations');
 
     final stations = dtos.map((dto) {
       final funFact = funFactsMap[dto.stopId];

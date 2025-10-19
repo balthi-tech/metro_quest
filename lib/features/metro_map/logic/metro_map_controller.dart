@@ -2,12 +2,12 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:metro_quest/core/extensions/geo_point_extension.dart';
 import 'package:metro_quest/core/theme/metro_line_colors.dart';
 import 'package:metro_quest/core/utils/distance_calculator.dart';
-import 'package:metro_quest/domain/entities/geo_point_entity.dart';
-import 'package:metro_quest/domain/entities/station_entity.dart';
+import 'package:metro_quest/core/utils/location_service.dart';
+import 'package:metro_quest/domain/entities/metro_station_entity.dart';
+import 'package:metro_quest/shared/providers/location_service_provider.dart';
 
 class MetroMapState {
   final Set<String> selectedLines;
@@ -27,7 +27,8 @@ class MetroMapState {
 }
 
 class MetroMapController extends AsyncNotifier<MetroMapState> {
-  final List<Station> stations;
+  final List<MetroStation> stations;
+  late LocationService _locationService;
 
   MetroMapController(this.stations);
 
@@ -38,8 +39,27 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
   );
   final double zoom = 15.0;
 
+  late LatLng initialPosition;
+
   @override
   Future<MetroMapState> build() async {
+    // uncomment to use user position stream
+    // final userPosition = await ref.watch(userPositionProvider.future);
+
+    _locationService = ref.read(locationServiceProvider);
+
+    // if (userPosition == null) {
+    //   initialPosition = LatLng(48.8566, 2.3522); // Default to Paris center
+    // } else {
+    //   initialPosition = userPosition.toLatLng();
+    // }
+
+    try {
+      initialPosition = (await _locationService.getCurrentPosition()).toLatLng();
+    } catch (e) {
+      initialPosition = LatLng(48.8566, 2.3522); // Default to Paris center
+    }
+
     final allLines = MetroLineColors.lineColorMap.keys.toSet();
     return MetroMapState(
       selectedLines: allLines,
@@ -47,7 +67,7 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     );
   }
 
-  void goToStation(Station station) async {
+  void goToStation(MetroStation station) async {
     if (mapController == null) {
       return;
     }
@@ -63,25 +83,25 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     }
   }
 
-  Future<List<Station>> sortStationByDistanceFromMe() async {
-    // return list of stations sorted by distance from current position with the distance calculated in kilometers
+  // Future<List<MetroStation>> sortStationByDistanceFromMe() async {
+  //   // return list of stations sorted by distance from current position with the distance calculated in kilometers
 
-    final currentPosition = await _getCurrentPosition();
+  //   final currentPosition = await _locationService.getCurrentPosition();
 
-    stations.sort((a, b) {
-      final distA = DistanceCalculator.calculateDistance(currentPosition, a.geoPoint);
-      final distB = DistanceCalculator.calculateDistance(currentPosition, b.geoPoint);
+  //   stations.sort((a, b) {
+  //     final distA = DistanceCalculator.calculateDistance(currentPosition, a.geoPoint);
+  //     final distB = DistanceCalculator.calculateDistance(currentPosition, b.geoPoint);
 
-      return distA.compareTo(distB);
-    });
+  //     return distA.compareTo(distB);
+  //   });
 
-    return stations;
-  }
+  //   return stations;
+  // }
 
   // return Tuple of station and distance in kilometers from current position
 
-  Future<List<MapEntry<Station, double>>> getStationsWithDistanceFromMe() async {
-    final currentPosition = await _getCurrentPosition();
+  Future<List<MapEntry<MetroStation, double>>> getStationsWithDistanceFromMe() async {
+    final currentPosition = await _locationService.getCurrentPosition();
 
     final stationsWithDistance = stations.map((station) {
       final distance = DistanceCalculator.calculateDistance(currentPosition, station.geoPoint);
@@ -168,7 +188,7 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
 
     final randomValue = rand.nextDouble();
 
-    List<MapEntry<Station, double>> filteredStations;
+    List<MapEntry<MetroStation, double>> filteredStations;
 
     if (randomValue < 0.7) {
       filteredStations = stationsWithDistance.where((entry) => entry.value <= 3.0).toList();
@@ -195,28 +215,28 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
 
   Future<void> recenterOnUser() async {
     if (mapController == null) return;
-    final currentPosition = await _getCurrentPosition();
+    final currentPosition = await _locationService.getCurrentPosition();
     await mapController!.animateCamera(
       CameraUpdate.newCameraPosition(CameraPosition(target: currentPosition.toLatLng(), zoom: zoom)),
     );
   }
 
-  Future<GeoPoint> _getCurrentPosition() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) throw Exception('Location services are disabled.');
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw Exception('Location permissions are denied');
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      throw Exception('Location permissions are permanently denied');
-    }
-    final position = await Geolocator.getCurrentPosition();
-    return GeoPoint(latitude: position.latitude, longitude: position.longitude);
-  }
+  // Future<GeoPoint> _getCurrentPosition() async {
+  //   bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //   if (!serviceEnabled) throw Exception('Location services are disabled.');
+  //   LocationPermission permission = await Geolocator.checkPermission();
+  //   if (permission == LocationPermission.denied) {
+  //     permission = await Geolocator.requestPermission();
+  //     if (permission == LocationPermission.denied) {
+  //       throw Exception('Location permissions are denied');
+  //     }
+  //   }
+  //   if (permission == LocationPermission.deniedForever) {
+  //     throw Exception('Location permissions are permanently denied');
+  //   }
+  //   final position = await Geolocator.getCurrentPosition();
+  //   return GeoPoint(latitude: position.latitude, longitude: position.longitude);
+  // }
 
   Future<void> zoomIn() async {
     if (mapController == null) {

@@ -12,7 +12,7 @@ final routerProvider = Provider<GoRouter>(
   (ref) {
     return GoRouter(
       initialLocation: '/data-loading',
-      debugLogDiagnostics: true,
+      debugLogDiagnostics: false, // Set to true to enable debug logging
       routes: [
         GoRoute(
           path: '/data-loading',
@@ -68,7 +68,7 @@ class ScaffoldWithTabs extends StatefulWidget {
   const ScaffoldWithTabs({required this.child, super.key});
 
   @override
-  _ScaffoldWithTabsState createState() => _ScaffoldWithTabsState();
+  State<ScaffoldWithTabs> createState() => _ScaffoldWithTabsState();
 }
 
 class _ScaffoldWithTabsState extends State<ScaffoldWithTabs> {

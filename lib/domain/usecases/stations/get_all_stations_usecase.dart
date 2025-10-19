@@ -1,4 +1,4 @@
-import 'package:metro_quest/domain/entities/station_entity.dart';
+import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 import 'package:metro_quest/domain/repositories/stations_repository.dart';
 
 class GetStationsUseCase {
@@ -6,7 +6,7 @@ class GetStationsUseCase {
 
   GetStationsUseCase({required this.repository});
 
-  Future<List<Station>> execute() async {
+  Future<List<MetroStation>> execute() async {
     return await repository.getAllStations();
   }
 }

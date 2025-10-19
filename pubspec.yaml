@@ -37,6 +37,9 @@ dependencies:
   google_maps_flutter: ^2.13.1
   geolocator: ^14.0.2
   collection: ^1.19.1
+  hive_ce: ^2.15.0
+  hive_ce_flutter: ^2.3.2
+  equatable: ^2.0.7
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +55,7 @@ dev_dependencies:
   riverpod_lint: ^3.0.3
   build_runner: ^2.7.1
   json_serializable: ^6.11.1
+  hive_ce_generator: ^1.9.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -62,6 +66,7 @@ flutter:
 
   assets:
     - assets/data/
+    - assets/data/metro/paris/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

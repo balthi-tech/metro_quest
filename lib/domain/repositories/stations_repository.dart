@@ -1,5 +1,5 @@
-import 'package:metro_quest/domain/entities/station_entity.dart';
+import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 
 abstract class StationRepository {
-  Future<List<Station>> getAllStations();
+  Future<List<MetroStation>> getAllStations();
 }

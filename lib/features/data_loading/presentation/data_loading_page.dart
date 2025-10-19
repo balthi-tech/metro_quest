@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:metro_quest/features/data_loading/logic/data_loading_provider.dart';
+import 'package:metro_quest/shared/widgets/async_value_wrapper.dart';
 
 class DataLoadingPage extends ConsumerWidget {
   const DataLoadingPage({super.key});
@@ -23,7 +24,8 @@ class DataLoadingPage extends ConsumerWidget {
   }
 
   Widget _buildBody(AsyncValue<void> state, BuildContext context) {
-    return state.when(
+    return asyncValueWrapper(
+      asyncValue: state,
       data: (_) => Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -40,14 +42,6 @@ class DataLoadingPage extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-
-      loading: () => Center(
-        child: CircularProgressIndicator(),
-      ),
-
-      error: (error, _) => Center(
-        child: Text('Erreur lors du chargement: $error'),
       ),
     );
   }

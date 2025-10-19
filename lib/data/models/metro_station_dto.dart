@@ -1,8 +1,8 @@
 import 'package:metro_quest/domain/entities/fact_entity.dart';
 import 'package:metro_quest/domain/entities/geo_point_entity.dart';
-import 'package:metro_quest/domain/entities/station_entity.dart';
+import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 
-class StationDTO {
+class MetroStationDto {
   final String routeId;
   final String routeLongName;
   final String stopId;
@@ -16,7 +16,7 @@ class StationDTO {
   final String nomCommune;
   final String codeInsee;
 
-  StationDTO({
+  MetroStationDto({
     required this.routeId,
     required this.routeLongName,
     required this.stopId,
@@ -31,13 +31,18 @@ class StationDTO {
     required this.codeInsee,
   });
 
-  factory StationDTO.fromCsv(Map<String, String> csvRow) {
+  @override
+  String toString() {
+    return 'MetroStationDto(routeId: $routeId, routeLongName: $routeLongName, stopId: $stopId, stopName: $stopName, stopLon: $stopLon, stopLat: $stopLat, operatorName: $operatorName, shortName: $shortName, mode: $mode, pointgeo: $pointgeo, nomCommune: $nomCommune, codeInsee: $codeInsee)';
+  }
+
+  factory MetroStationDto.fromCsv(Map<String, String> csvRow) {
     List<double>? parsePointGeo(String? val) {
       if (val == null || val.isEmpty) return null;
       return val.split(',').map((e) => double.tryParse(e) ?? 0.0).toList();
     }
 
-    return StationDTO(
+    return MetroStationDto(
       routeId: csvRow['id'] ?? '',
       routeLongName: csvRow['route_long_name'] ?? '',
       stopId: csvRow['stop_id'] ?? '',
@@ -53,7 +58,7 @@ class StationDTO {
     );
   }
 
-  Station toDomain({
+  MetroStation toDomain({
     Fact? funfact,
     Fact? historyFact,
   }) {
@@ -61,7 +66,7 @@ class StationDTO {
       throw Exception('GeoPoint is required and must have exactly 2 coordinates');
     }
 
-    return Station(
+    return MetroStation(
       id: stopId,
       name: stopName,
       lineId: routeId,

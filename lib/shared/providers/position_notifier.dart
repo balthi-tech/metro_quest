@@ -25,7 +25,7 @@ class PositionNotifier extends AsyncNotifier<GeoPoint?> {
   void _startListening() {
     final settings = const LocationSettings(
       accuracy: LocationAccuracy.bestForNavigation,
-      distanceFilter: 20,
+      distanceFilter: 50,
     );
 
     _subscription = Geolocator.getPositionStream(locationSettings: settings).listen(

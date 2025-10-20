@@ -1,4 +1,4 @@
-import 'package:metro_quest/core/utils/visited_station_service.dart';
+import 'package:metro_quest/core/services/visited_station_service.dart';
 
 class MarkStationVisitedUseCase {
   final VisitedStationService _service;

@@ -40,6 +40,8 @@ dependencies:
   hive_ce: ^2.15.0
   hive_ce_flutter: ^2.3.2
   equatable: ^2.0.7
+  map_launcher: ^4.4.2
+  flutter_svg: ^2.2.1
 
 dev_dependencies:
   flutter_test:

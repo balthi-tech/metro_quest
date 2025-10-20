@@ -9,9 +9,13 @@ import 'package:metro_quest/features/lines/presentation/metro_lines_page.dart';
 import 'package:metro_quest/features/nearest_station/presentation/nearest_station_page.dart';
 import 'package:metro_quest/features/station_detail/presentation/station_presentation_page.dart';
 
+// navigator key to control navigation outside of widget context
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>(
   (ref) {
     return GoRouter(
+      navigatorKey: navigatorKey,
       initialLocation: '/data-loading',
       debugLogDiagnostics: false, // Set to true to enable debug logging
       routes: [

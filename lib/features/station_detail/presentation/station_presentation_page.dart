@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:metro_quest/domain/entities/metro_station_filter_criteria.dart';
+import 'package:metro_quest/features/open_in_map/presentation/widgets/open_in_map_button.dart';
 import 'package:metro_quest/features/station/logic/station_provider.dart';
 import 'package:metro_quest/shared/widgets/async_value_wrapper.dart';
 
@@ -54,6 +55,7 @@ class _StationDetailPageState extends ConsumerState<StationDetailPage> {
                 SizedBox(height: 8),
                 Text('Nom de la ligne: ${station.lineName}'),
                 SizedBox(height: 8),
+                OpenInMapButton(station: station),
               ],
             ),
           );

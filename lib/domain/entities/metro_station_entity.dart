@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:metro_quest/domain/entities/fact_entity.dart';
 import 'package:metro_quest/domain/entities/geo_point_entity.dart';
 
@@ -7,6 +8,7 @@ class MetroStation {
   final GeoPoint geoPoint;
   final String lineId;
   final String lineName;
+  final Color? lineColor;
   final String city;
   final Fact? funFact;
   final Fact? historyFact;
@@ -19,6 +21,7 @@ class MetroStation {
     required this.geoPoint,
     required this.lineId,
     required this.lineName,
+    this.lineColor,
     required this.city,
     this.funFact,
     this.historyFact,
@@ -31,7 +34,7 @@ class MetroStation {
     return 'MetroStation(id: $id, name: $name, geoPoint: $geoPoint, lineId: $lineId, lineName: $lineName, city: $city, funFact: $funFact, historyFact: $historyFact, visited: $visited)';
   }
 
-  MetroStation copyWith({bool? visited, double? distanceFromUser}) {
+  MetroStation copyWith({bool? visited, double? distanceFromUser, Color? lineColor}) {
     return MetroStation(
       id: id,
       name: name,
@@ -39,6 +42,7 @@ class MetroStation {
       geoPoint: geoPoint,
       visited: visited ?? this.visited,
       lineId: lineId,
+      lineColor: lineColor ?? this.lineColor,
       city: city,
       distanceFromUser: distanceFromUser ?? this.distanceFromUser,
     );

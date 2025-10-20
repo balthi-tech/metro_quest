@@ -1,11 +1,10 @@
 import 'dart:math';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:metro_quest/core/extensions/geo_point_extension.dart';
 import 'package:metro_quest/core/theme/metro_line_colors.dart';
-import 'package:metro_quest/core/utils/distance_calculator.dart';
-import 'package:metro_quest/core/utils/location_service.dart';
 import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 import 'package:metro_quest/shared/providers/location_service_provider.dart';
 
@@ -28,7 +27,6 @@ class MetroMapState {
 
 class MetroMapController extends AsyncNotifier<MetroMapState> {
   final List<MetroStation> stations;
-  late LocationService _locationService;
 
   MetroMapController(this.stations);
 
@@ -40,27 +38,22 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
   final double zoom = 15.0;
 
   late LatLng initialPosition;
+  late LatLng currentPosition;
 
   @override
   Future<MetroMapState> build() async {
-    // uncomment to use user position stream
-    // final userPosition = await ref.watch(userPositionProvider.future);
+    final asyncPosition = ref.watch(userPositionProvider);
 
-    _locationService = ref.read(locationServiceProvider);
+    final LatLng positionLatLng = asyncPosition.maybeWhen(
+      data: (geoPoint) => geoPoint?.toLatLng() ?? const LatLng(48.8566, 2.3522),
+      orElse: () => const LatLng(48.8566, 2.3522),
+    );
 
-    // if (userPosition == null) {
-    //   initialPosition = LatLng(48.8566, 2.3522); // Default to Paris center
-    // } else {
-    //   initialPosition = userPosition.toLatLng();
-    // }
-
-    try {
-      initialPosition = (await _locationService.getCurrentPosition()).toLatLng();
-    } catch (e) {
-      initialPosition = LatLng(48.8566, 2.3522); // Default to Paris center
-    }
+    initialPosition = positionLatLng;
+    currentPosition = positionLatLng;
 
     final allLines = MetroLineColors.lineColorMap.keys.toSet();
+
     return MetroMapState(
       selectedLines: allLines,
       markers: _buildMarkers(selectedLines: allLines),
@@ -79,7 +72,9 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     try {
       await mapController!.showMarkerInfoWindow(MarkerId(station.id));
     } catch (e) {
-      print('Error showing info window: $e');
+      if (kDebugMode) {
+        print('Error showing info window: $e');
+      }
     }
   }
 
@@ -100,18 +95,18 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
 
   // return Tuple of station and distance in kilometers from current position
 
-  Future<List<MapEntry<MetroStation, double>>> getStationsWithDistanceFromMe() async {
-    final currentPosition = await _locationService.getCurrentPosition();
+  // Future<List<MapEntry<MetroStation, double>>> getStationsWithDistanceFromMe() async {
+  //   final currentPosition = await _locationService.getCurrentPosition();
 
-    final stationsWithDistance = stations.map((station) {
-      final distance = DistanceCalculator.calculateDistance(currentPosition, station.geoPoint);
-      return MapEntry(station, distance);
-    }).toList();
+  //   final stationsWithDistance = stations.map((station) {
+  //     final distance = DistanceCalculator.calculateDistance(currentPosition, station.geoPoint);
+  //     return MapEntry(station, distance);
+  //   }).toList();
 
-    stationsWithDistance.sort((a, b) => a.value.compareTo(b.value));
+  //   stationsWithDistance.sort((a, b) => a.value.compareTo(b.value));
 
-    return stationsWithDistance;
-  }
+  //   return stationsWithDistance;
+  // }
 
   void _onInfoWindowTap(MarkerId markerId) {
     // display some info or navigate to another screen
@@ -121,8 +116,6 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     if (station == null) {
       return;
     }
-
-    print('Info window tapped for station: ${station.name}, Line: ${station.lineName}');
 
     // Here you can navigate to another screen or display more information about the station
   }
@@ -180,44 +173,46 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
 
   final rand = Random();
 
-  Future<void> goToPonderedRandomStation() async {
-    if (mapController == null) return;
+  // Future<void> goToPonderedRandomStation() async {
+  //   if (mapController == null) {
+  //     return;
+  //   }
 
-    final stationsWithDistance = await getStationsWithDistanceFromMe();
-    if (stationsWithDistance.isEmpty) return;
+  //   final stationsWithDistance = await getStationsWithDistanceFromMe();
+  //   if (stationsWithDistance.isEmpty) return;
 
-    final randomValue = rand.nextDouble();
+  //   final randomValue = rand.nextDouble();
 
-    List<MapEntry<MetroStation, double>> filteredStations;
+  //   List<MapEntry<MetroStation, double>> filteredStations;
 
-    if (randomValue < 0.7) {
-      filteredStations = stationsWithDistance.where((entry) => entry.value <= 3.0).toList();
-    } else if (randomValue < 0.9) {
-      filteredStations = stationsWithDistance.where((entry) => entry.value > 3.0 && entry.value <= 8.0).toList();
-    } else {
-      filteredStations = stationsWithDistance.where((entry) => entry.value > 8.0 && entry.value <= 20.0).toList();
-    }
+  //   if (randomValue < 0.7) {
+  //     filteredStations = stationsWithDistance.where((entry) => entry.value <= 3.0).toList();
+  //   } else if (randomValue < 0.9) {
+  //     filteredStations = stationsWithDistance.where((entry) => entry.value > 3.0 && entry.value <= 8.0).toList();
+  //   } else {
+  //     filteredStations = stationsWithDistance.where((entry) => entry.value > 8.0 && entry.value <= 20.0).toList();
+  //   }
 
-    if (filteredStations.isEmpty) {
-      filteredStations = stationsWithDistance;
-    }
+  //   if (filteredStations.isEmpty) {
+  //     filteredStations = stationsWithDistance;
+  //   }
 
-    final stationEntry = filteredStations[rand.nextInt(filteredStations.length)];
-    final station = stationEntry.key;
+  //   final stationEntry = filteredStations[rand.nextInt(filteredStations.length)];
+  //   final station = stationEntry.key;
 
-    print('Going to station: ${station.name}, Distance: ${stationEntry.value.toStringAsFixed(2)} km');
-
-    await mapController!.animateCamera(
-      CameraUpdate.newCameraPosition(CameraPosition(target: station.geoPoint.toLatLng(), zoom: zoom)),
-    );
-    await mapController!.showMarkerInfoWindow(MarkerId(station.id));
-  }
+  //   await mapController!.animateCamera(
+  //     CameraUpdate.newCameraPosition(CameraPosition(target: station.geoPoint.toLatLng(), zoom: zoom)),
+  //   );
+  //   await mapController!.showMarkerInfoWindow(MarkerId(station.id));
+  // }
 
   Future<void> recenterOnUser() async {
-    if (mapController == null) return;
-    final currentPosition = await _locationService.getCurrentPosition();
+    if (mapController == null) {
+      return;
+    }
+
     await mapController!.animateCamera(
-      CameraUpdate.newCameraPosition(CameraPosition(target: currentPosition.toLatLng(), zoom: zoom)),
+      CameraUpdate.newCameraPosition(CameraPosition(target: currentPosition, zoom: zoom)),
     );
   }
 

@@ -26,7 +26,7 @@ class _StationDetailPageState extends ConsumerState<StationDetailPage> {
       appBar: AppBar(
         leading: BackButton(
           onPressed: () {
-            context.go('/');
+            context.pop();
           },
         ),
         title: Text('Détails de la station'),

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:metro_quest/domain/entities/metro_line_entity.dart';
 import 'package:metro_quest/domain/entities/metro_station_entity.dart';
+import 'package:metro_quest/features/lines/logic/line_provider.dart';
 import 'package:metro_quest/features/station/logic/station_provider.dart';
 import 'package:metro_quest/shared/providers/visited_station_provider.dart';
 
@@ -11,10 +13,26 @@ class StationController extends AsyncNotifier<List<MetroStation>> {
     final getStationsUseCase = ref.read(getStationsUseCaseProvider);
     final stations = await getStationsUseCase.execute();
 
+    final linesAsync = await ref.watch(lineControllerProvider.future);
+    final linesMap = {for (var line in linesAsync) line.id: line};
+
     _allStations.clear();
-    _allStations.addAll(stations);
+
+    final enrichedStations = enrichStationsWithLineColors(stations, linesMap);
+
+    _allStations.addAll(enrichedStations);
 
     return _applyVisitedStatus(_allStations);
+  }
+
+  List<MetroStation> enrichStationsWithLineColors(
+    List<MetroStation> stations,
+    Map<String, MetroLine> lineMap,
+  ) {
+    return stations.map((station) {
+      final metroLine = lineMap[station.lineId];
+      return station.copyWith(lineColor: metroLine?.color);
+    }).toList();
   }
 
   Future<void> refreshVisited() async {

@@ -10,6 +10,7 @@ import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 import 'package:metro_quest/features/lines/logic/line_provider.dart';
 import 'package:metro_quest/features/metro_map/logic/metro_map_controller.dart';
 import 'package:metro_quest/features/metro_map/logic/metro_map_provider.dart';
+import 'package:metro_quest/features/nearest_station/presentation/nearest_station_page.dart';
 
 class MetroMap extends ConsumerWidget {
   final List<MetroStation> stations;
@@ -35,30 +36,10 @@ class MetroMap extends ConsumerWidget {
   }
 
   void _displayNearStation(MetroMapController controller, BuildContext context) async {
-    final stations = await controller.getStationsWithDistanceFromMe();
-
-    if (!context.mounted) {
-      return;
-    }
-
     final selectedStationId = await showModalBottomSheet(
       context: context,
       builder: (buildContext) {
-        return ListView.builder(
-          itemCount: stations.length,
-          itemBuilder: (context, index) {
-            final station = stations[index];
-            return ListTile(
-              title: Text(station.key.name),
-              subtitle: Text(station.key.lineName),
-              trailing: Text('${station.value.toStringAsFixed(2)} km'),
-              onTap: () {
-                controller.goToStation(station.key);
-                Navigator.pop(context, station.key.id);
-              },
-            );
-          },
-        );
+        return NearestStationPage();
       },
     );
 
@@ -67,7 +48,7 @@ class MetroMap extends ConsumerWidget {
     }
 
     if (selectedStationId != null) {
-      context.go('/station/$selectedStationId');
+      context.push('/station/$selectedStationId');
     }
   }
 
@@ -131,14 +112,14 @@ class MetroMap extends ConsumerWidget {
                   },
                   child: Icon(Icons.my_location),
                 ),
-                SizedBox(height: 10),
-                FloatingActionButton(
-                  heroTag: "random_station",
-                  onPressed: () async {
-                    await controller.goToPonderedRandomStation();
-                  },
-                  child: Icon(Icons.shuffle),
-                ),
+                // SizedBox(height: 10),
+                // FloatingActionButton(
+                //   heroTag: "random_station",
+                //   onPressed: () async {
+                //     await controller.goToPonderedRandomStation();
+                //   },
+                //   child: Icon(Icons.shuffle),
+                // ),
               ],
             ),
           ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:metro_quest/domain/entities/geo_point_entity.dart';
@@ -9,14 +10,15 @@ class PositionNotifier extends AsyncNotifier<GeoPoint?> {
 
   @override
   FutureOr<GeoPoint?> build() {
-    // Démarre l'écoute GPS dès que le provider est initialisé
+    // Démarre l’écoute GPS dès l’initialisation
     _startListening();
 
-    // Annule l’abonnement automatiquement à la destruction du provider
+    // Annule l’abonnement automatiquement lors de la destruction du provider
     ref.onDispose(() {
       _subscription?.cancel();
     });
 
+    // Valeur initiale (position non encore connue)
     return null;
   }
 
@@ -28,11 +30,17 @@ class PositionNotifier extends AsyncNotifier<GeoPoint?> {
 
     _subscription = Geolocator.getPositionStream(locationSettings: settings).listen(
       (position) {
+        if (kDebugMode) {
+          print('New position: ${position.latitude}, ${position.longitude}');
+        }
         final point = GeoPoint(latitude: position.latitude, longitude: position.longitude);
         state = AsyncData(point);
       },
-      onError: (err) {
-        state = AsyncError(err, StackTrace.current);
+      onError: (error, stackTrace) {
+        // Ici on peut choisir : null ou erreur explicite
+        state = AsyncData(null);
+        // Ou pour montrer l’erreur explicitement :
+        // state = AsyncError(error, stackTrace);
       },
     );
   }

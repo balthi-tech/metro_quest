@@ -22,20 +22,27 @@ final filteredSortedStationsProvider = FutureProvider.family<List<MetroStation>,
   final filterUseCase = ref.watch(filterStationsUseCaseProvider);
   final sortUseCase = ref.watch(sortStationsUseCaseProvider);
   final getStationsWithDistanceUseCase = ref.watch(getStationsWithDistanceUseCaseProvider);
-  final locationService = ref.watch(locationServiceProvider);
-
-  final userPosition = await locationService.getCurrentPosition();
 
   // 1. filtre d'abord
   final filtered = filterUseCase.execute(metroStations: stations, criteria: criteria);
 
   // 2. calcule la distance pour chaque station filtrée
 
-  final withDistance = await getStationsWithDistanceUseCase.execute(filtered);
+  final asyncPosition = ref.watch(userPositionProvider);
+
+  final userPosition = asyncPosition.when(
+    data: (position) => position,
+    loading: () => null,
+    error: (_, _) => null,
+  );
+
+  final stationsToSort = userPosition == null
+      ? filtered
+      : await getStationsWithDistanceUseCase.execute(stations: filtered, currentPosition: userPosition);
 
   // 3. tri selon le critère
   final sorted = sortUseCase.execute(
-    metroStations: withDistance,
+    metroStations: stationsToSort,
     criteria: criteria?.sortBy,
     userLocation: userPosition,
   );
@@ -79,6 +86,5 @@ final sortStationsUseCaseProvider = Provider<SortedStationsUseCase>((ref) {
 });
 
 final getStationsWithDistanceUseCaseProvider = Provider<GetStationsWithDistanceUseCase>((ref) {
-  final locationService = ref.read(locationServiceProvider);
-  return GetStationsWithDistanceUseCase(locationService);
+  return GetStationsWithDistanceUseCase();
 });

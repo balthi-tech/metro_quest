@@ -9,6 +9,8 @@ import 'package:metro_quest/features/lines/logic/line_provider.dart';
 import 'package:metro_quest/features/station/logic/station_controller.dart';
 import 'package:metro_quest/features/station/logic/station_provider.dart';
 import 'package:metro_quest/shared/widgets/async_value_wrapper.dart';
+import 'package:metro_quest/shared/widgets/metro_filter_button.dart';
+import 'package:metro_quest/shared/widgets/metro_station_list_tile.dart';
 
 class LinePresentationPage extends ConsumerStatefulWidget {
   final String lineId;
@@ -19,6 +21,8 @@ class LinePresentationPage extends ConsumerStatefulWidget {
 }
 
 class _LinePresentationPageState extends ConsumerState<LinePresentationPage> {
+  MetroStationSortCriteria _selectedCriteria = MetroStationSortCriteria.distanceAsc;
+
   @override
   Widget build(BuildContext context) {
     final lineId = widget.lineId;
@@ -27,7 +31,7 @@ class _LinePresentationPageState extends ConsumerState<LinePresentationPage> {
 
     final filteredStationsAsync = ref.watch(
       filteredSortedStationsProvider(
-        MetroStationFilterCriterias(lineId: lineId, sortBy: MetroStationSortCriteria.distanceAsc),
+        MetroStationFilterCriterias(lineId: lineId, sortBy: _selectedCriteria),
       ),
     );
 
@@ -40,12 +44,34 @@ class _LinePresentationPageState extends ConsumerState<LinePresentationPage> {
 
     return Scaffold(
       appBar: AppBar(
+        scrolledUnderElevation: 0,
+        backgroundColor: currentLine?.color ?? Theme.of(context).primaryColor,
         leading: BackButton(
+          color: Colors.white,
           onPressed: () {
-            context.go('/lines');
+            context.pop();
           },
         ),
-        title: Text(currentLine?.name ?? 'Détails de la ligne'),
+        title: Text(
+          "Stations de la ligne ${currentLine?.name ?? ''}",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          MetroFilterButton<MetroStationSortCriteria>(
+            values: MetroStationSortCriteria.values,
+            initialCriteria: _selectedCriteria,
+            onCriteriaSelected: (criteria) {
+              setState(() {
+                _selectedCriteria = criteria;
+              });
+            },
+            color: Colors.white,
+          ),
+        ],
       ),
       body: asyncValueWrapper(
         asyncValue: filteredStationsAsync,
@@ -56,19 +82,9 @@ class _LinePresentationPageState extends ConsumerState<LinePresentationPage> {
               Container(
                 width: double.infinity,
                 color: currentLine?.color ?? Colors.grey,
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.only(bottom: 16.0),
                 child: Column(
                   children: [
-                    Text(
-                      'Stations de la ligne ${currentLine?.name ?? ''}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8.0),
                     Text(
                       "Nombre de stations visitées: ${stations.where((station) => station.visited).length} / ${stations.length}",
                       style: const TextStyle(
@@ -112,27 +128,10 @@ class _LinePresentationPageState extends ConsumerState<LinePresentationPage> {
       itemCount: stations.length,
       itemBuilder: (context, index) {
         final station = stations[index];
-        return ListTile(
-          title: Text(station.name),
-          subtitle: Text(
-            'Distance: ${station.distanceFromUser != null ? '${station.distanceFromUser!.toStringAsFixed(2)} km' : 'Inconnue'}',
-          ),
-          leading: CircleAvatar(
-            backgroundColor: currentLine?.color ?? Colors.grey,
-            child: Text(
-              currentLine?.name.substring(0, 1) ?? '?',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-          trailing: Checkbox(
-            value: station.visited,
-            onChanged: (value) async {
-              await stationController.visitStation(station.id, value ?? false);
-            },
-          ),
-          onTap: () {
-            context.go('/station/${station.id}');
-          },
+        return MetroStationListTile(
+          station: station,
+          stationController: stationController,
+          isCheckable: true,
         );
       },
     );

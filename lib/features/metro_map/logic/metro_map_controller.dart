@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +5,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:metro_quest/core/extensions/geo_point_extension.dart';
 import 'package:metro_quest/core/theme/metro_line_colors.dart';
 import 'package:metro_quest/domain/entities/metro_station_entity.dart';
+import 'package:metro_quest/domain/entities/metro_station_filter_criteria.dart';
+import 'package:metro_quest/features/station/logic/station_provider.dart';
 import 'package:metro_quest/shared/providers/location_service_provider.dart';
 
 class MetroMapState {
@@ -154,57 +155,31 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     );
   }
 
-  Future<void> goToRandomStation() async {
+  Future<void> goToPonderedRandomStation() async {
     if (mapController == null) {
       return;
     }
-    final available = stations.where((station) => state.value!.selectedLines.contains(station.lineName)).toList();
-    if (available.isEmpty) {
+
+    // filter stations to only choose in not visited ones
+
+    final notVisitedStations = ref
+        .read(filterStationsUseCaseProvider)
+        .execute(
+          metroStations: stations,
+          criteria: MetroStationFilterCriterias(visited: false),
+        );
+
+    final randomStation = ref.read(selectRandomStationUseCaseProvider).execute(notVisitedStations);
+
+    if (randomStation == null) {
       return;
     }
-    final station = available[Random().nextInt(available.length)];
+
     await mapController!.animateCamera(
-      CameraUpdate.newCameraPosition(CameraPosition(target: station.geoPoint.toLatLng(), zoom: zoom)),
+      CameraUpdate.newCameraPosition(CameraPosition(target: randomStation.geoPoint.toLatLng(), zoom: zoom)),
     );
-    await mapController!.showMarkerInfoWindow(MarkerId(station.id));
+    await mapController!.showMarkerInfoWindow(MarkerId(randomStation.id));
   }
-
-  // go to random station with poderation to avoid going to far stations (70% chance to go to a station within 5km, 20% chance to go to a station within 10km, 10% chance to go to a station within 20km)
-
-  final rand = Random();
-
-  // Future<void> goToPonderedRandomStation() async {
-  //   if (mapController == null) {
-  //     return;
-  //   }
-
-  //   final stationsWithDistance = await getStationsWithDistanceFromMe();
-  //   if (stationsWithDistance.isEmpty) return;
-
-  //   final randomValue = rand.nextDouble();
-
-  //   List<MapEntry<MetroStation, double>> filteredStations;
-
-  //   if (randomValue < 0.7) {
-  //     filteredStations = stationsWithDistance.where((entry) => entry.value <= 3.0).toList();
-  //   } else if (randomValue < 0.9) {
-  //     filteredStations = stationsWithDistance.where((entry) => entry.value > 3.0 && entry.value <= 8.0).toList();
-  //   } else {
-  //     filteredStations = stationsWithDistance.where((entry) => entry.value > 8.0 && entry.value <= 20.0).toList();
-  //   }
-
-  //   if (filteredStations.isEmpty) {
-  //     filteredStations = stationsWithDistance;
-  //   }
-
-  //   final stationEntry = filteredStations[rand.nextInt(filteredStations.length)];
-  //   final station = stationEntry.key;
-
-  //   await mapController!.animateCamera(
-  //     CameraUpdate.newCameraPosition(CameraPosition(target: station.geoPoint.toLatLng(), zoom: zoom)),
-  //   );
-  //   await mapController!.showMarkerInfoWindow(MarkerId(station.id));
-  // }
 
   Future<void> recenterOnUser() async {
     if (mapController == null) {

@@ -30,6 +30,9 @@ class FilteredStationsUseCase {
       if (criteria?.historyFact != null && station.historyFact != criteria?.historyFact) {
         return false;
       }
+      if (criteria?.visited != null && station.visited != criteria?.visited) {
+        return false;
+      }
       return true;
     }).toList();
   }

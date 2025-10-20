@@ -131,7 +131,6 @@ class _LinePresentationPageState extends ConsumerState<LinePresentationPage> {
         return MetroStationListTile(
           station: station,
           stationController: stationController,
-          isCheckable: true,
         );
       },
     );

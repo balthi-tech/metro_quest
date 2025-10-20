@@ -6,6 +6,7 @@ import 'package:metro_quest/features/data_loading/presentation/data_loading_page
 import 'package:metro_quest/features/home/presentation/home_page.dart';
 import 'package:metro_quest/features/line_detail/presentation/line_presentation_page.dart';
 import 'package:metro_quest/features/lines/presentation/metro_lines_page.dart';
+import 'package:metro_quest/features/nearest_station/presentation/nearest_station_page.dart';
 import 'package:metro_quest/features/station_detail/presentation/station_presentation_page.dart';
 
 final routerProvider = Provider<GoRouter>(
@@ -34,10 +35,10 @@ final routerProvider = Provider<GoRouter>(
               path: '/lines',
               pageBuilder: (_, _) => NoTransitionPage(child: MetroLinesPage()),
             ),
-            // GoRoute(
-            //   path: '/settings',
-            //   pageBuilder: (_, _) => NoTransitionPage(child: _tabs[2]),
-            // ),
+            GoRoute(
+              path: '/stations',
+              pageBuilder: (_, _) => NoTransitionPage(child: AllStationsPage()),
+            ),
           ],
         ),
 
@@ -77,6 +78,13 @@ class _ScaffoldWithTabsState extends State<ScaffoldWithTabs> {
   static const _locationToIndex = {
     '/': 0,
     '/lines': 1,
+    '/stations': 2,
+  };
+
+  static const _indexToLocation = {
+    0: '/',
+    1: '/lines',
+    2: '/stations',
   };
 
   @override
@@ -89,15 +97,7 @@ class _ScaffoldWithTabsState extends State<ScaffoldWithTabs> {
 
   void _onTabTapped(int index) {
     if (index != _currentIndex) {
-      switch (index) {
-        case 0:
-          context.go('/');
-
-          break;
-        case 1:
-          context.go('/lines');
-          break;
-      }
+      context.go(_indexToLocation[index]!);
 
       setState(() {
         _currentIndex = index;
@@ -115,7 +115,7 @@ class _ScaffoldWithTabsState extends State<ScaffoldWithTabs> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.linear_scale), label: 'Lines'),
-          // BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.train), label: 'Stations'),
         ],
       ),
     );

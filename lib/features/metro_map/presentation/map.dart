@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:metro_quest/core/extensions/geo_point_extension.dart';
@@ -10,7 +9,6 @@ import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 import 'package:metro_quest/features/lines/logic/line_provider.dart';
 import 'package:metro_quest/features/metro_map/logic/metro_map_controller.dart';
 import 'package:metro_quest/features/metro_map/logic/metro_map_provider.dart';
-import 'package:metro_quest/features/nearest_station/presentation/nearest_station_page.dart';
 
 class MetroMap extends ConsumerWidget {
   final List<MetroStation> stations;
@@ -35,28 +33,13 @@ class MetroMap extends ConsumerWidget {
     );
   }
 
-  void _displayNearStation(MetroMapController controller, BuildContext context) async {
-    final selectedStationId = await showModalBottomSheet(
-      context: context,
-      builder: (buildContext) {
-        return NearestStationPage();
-      },
-    );
-
-    if (!context.mounted) {
-      return;
-    }
-
-    if (selectedStationId != null) {
-      context.push('/station/$selectedStationId');
-    }
-  }
-
   Widget _buildMap(MetroMapState state, MetroMapController controller, List<MetroLine> lines, BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _displayNearStation(controller, context),
-        label: const Text('Nearest Stations'),
+        onPressed: () {
+          controller.goToPonderedRandomStation();
+        },
+        label: const Text('Discover'),
         icon: const Icon(Icons.directions_railway),
       ),
       body: Stack(
@@ -112,14 +95,6 @@ class MetroMap extends ConsumerWidget {
                   },
                   child: Icon(Icons.my_location),
                 ),
-                // SizedBox(height: 10),
-                // FloatingActionButton(
-                //   heroTag: "random_station",
-                //   onPressed: () async {
-                //     await controller.goToPonderedRandomStation();
-                //   },
-                //   child: Icon(Icons.shuffle),
-                // ),
               ],
             ),
           ),

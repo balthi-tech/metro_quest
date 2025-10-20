@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:metro_quest/data/repositories/stations_repository_impl.dart';
 import 'package:metro_quest/data/sources/stations_datasource.dart';
@@ -7,6 +9,7 @@ import 'package:metro_quest/domain/repositories/stations_repository.dart';
 import 'package:metro_quest/domain/usecases/stations/filtered_stations_usecase.dart';
 import 'package:metro_quest/domain/usecases/stations/get_all_stations_usecase.dart';
 import 'package:metro_quest/domain/usecases/stations/get_stations_with_distance_usecase.dart';
+import 'package:metro_quest/domain/usecases/stations/select_random_station_usecase.dart';
 import 'package:metro_quest/domain/usecases/stations/sort_stations_usecase.dart';
 import 'package:metro_quest/features/station/logic/station_controller.dart';
 
@@ -87,4 +90,14 @@ final sortStationsUseCaseProvider = Provider<SortedStationsUseCase>((ref) {
 
 final getStationsWithDistanceUseCaseProvider = Provider<GetStationsWithDistanceUseCase>((ref) {
   return GetStationsWithDistanceUseCase();
+});
+
+// Random provider
+final randomProvider = Provider<Random>((ref) {
+  return Random();
+});
+
+// SelectRandomStationUseCase
+final selectRandomStationUseCaseProvider = Provider<SelectRandomStationUseCase>((ref) {
+  return SelectRandomStationUseCase(random: ref.read(randomProvider));
 });

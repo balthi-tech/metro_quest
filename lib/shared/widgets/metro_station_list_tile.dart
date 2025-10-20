@@ -6,12 +6,15 @@ import 'package:metro_quest/features/station/logic/station_controller.dart';
 class MetroStationListTile extends StatefulWidget {
   final MetroStation station;
   final StationController stationController;
-  final bool isCheckable;
+  final bool displayCheckbox;
+  final bool isReadOnly;
+
   const MetroStationListTile({
     super.key,
     required this.station,
     required this.stationController,
-    required this.isCheckable,
+    this.displayCheckbox = true,
+    this.isReadOnly = false,
   });
 
   @override
@@ -33,12 +36,14 @@ class _MetroStationListTileState extends State<MetroStationListTile> {
           style: const TextStyle(color: Colors.white),
         ),
       ),
-      trailing: widget.isCheckable
+      trailing: widget.displayCheckbox
           ? Checkbox(
               value: widget.station.visited,
-              onChanged: (value) async {
-                await widget.stationController.visitStation(widget.station.id, value ?? false);
-              },
+              onChanged: widget.isReadOnly
+                  ? null
+                  : (value) async {
+                      await widget.stationController.visitStation(widget.station.id, value ?? false);
+                    },
             )
           : null,
       onTap: () {

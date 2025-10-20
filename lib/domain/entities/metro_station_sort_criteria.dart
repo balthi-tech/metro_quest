@@ -4,9 +4,7 @@ enum MetroStationSortCriteria implements SortCriteria {
   nameAsc,
   nameDesc,
   distanceAsc,
-  distanceDesc,
-  idAsc,
-  idDesc;
+  distanceDesc;
 
   @override
   String label() {
@@ -19,10 +17,6 @@ enum MetroStationSortCriteria implements SortCriteria {
         return 'Distance (plus proche)';
       case MetroStationSortCriteria.distanceDesc:
         return 'Distance (plus éloigné)';
-      case MetroStationSortCriteria.idAsc:
-        return 'ID (croissant)';
-      case MetroStationSortCriteria.idDesc:
-        return 'ID (décroissant)';
     }
   }
 }

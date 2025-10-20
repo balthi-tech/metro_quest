@@ -20,10 +20,6 @@ class SortedStationsUseCase {
           return a.name.compareTo(b.name);
         case MetroStationSortCriteria.nameDesc:
           return b.name.compareTo(a.name);
-        case MetroStationSortCriteria.idAsc:
-          return a.id.compareTo(b.id);
-        case MetroStationSortCriteria.idDesc:
-          return b.id.compareTo(a.id);
         case MetroStationSortCriteria.distanceAsc:
           if (a.distanceFromUser == null || b.distanceFromUser == null) {
             return 0;

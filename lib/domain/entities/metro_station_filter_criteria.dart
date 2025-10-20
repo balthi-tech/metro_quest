@@ -10,6 +10,7 @@ class MetroStationFilterCriterias extends Equatable {
   final String? city;
   final Fact? funFact;
   final Fact? historyFact;
+  final bool? visited;
   final MetroStationSortCriteria? sortBy;
 
   const MetroStationFilterCriterias({
@@ -20,9 +21,10 @@ class MetroStationFilterCriterias extends Equatable {
     this.city,
     this.funFact,
     this.historyFact,
+    this.visited,
     this.sortBy,
   });
 
   @override
-  List<Object?> get props => [lineId, lineName, id, name, city, funFact, historyFact, sortBy];
+  List<Object?> get props => [lineId, lineName, id, name, city, funFact, historyFact, sortBy, visited];
 }

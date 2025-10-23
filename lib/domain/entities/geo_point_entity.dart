@@ -6,6 +6,6 @@ class GeoPoint {
 
   @override
   String toString() {
-    return 'GeoPoint(latitude: $latitude, longitude: $longitude)';
+    return 'GeoPoint(latitude: ${latitude.toString().replaceAll('.', ',')}, longitude: ${longitude.toString().replaceAll('.', ',')})';
   }
 }

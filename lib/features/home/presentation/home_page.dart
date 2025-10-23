@@ -23,10 +23,12 @@ class HomePage extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text('Liste des stations')),
-      body: asyncValueWrapper(
-        asyncValue: filteredStationsAsync,
-        data: (stations) => _buildData(stations),
+      extendBodyBehindAppBar: true,
+      body: SafeArea(
+        child: asyncValueWrapper(
+          asyncValue: filteredStationsAsync,
+          data: (stations) => _buildData(stations),
+        ),
       ),
     );
   }

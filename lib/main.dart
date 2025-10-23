@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:metro_quest/app.dart';
-import 'package:metro_quest/core/services/hive_service.dart';
+import 'package:metro_quest/core/services/database/hive_service.dart';
+import 'package:metro_quest/shared/widgets/lifecycle_manager.dart';
 
 void main() async {
   // Uncomment the line below to enable rebuild debugging
@@ -10,5 +11,11 @@ void main() async {
 
   await HiveService.init();
 
-  runApp(const ProviderScope(child: MetroQuestApp()));
+  runApp(
+    const ProviderScope(
+      child: LifecycleManager(
+        child: MetroQuestApp(),
+      ),
+    ),
+  );
 }

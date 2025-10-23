@@ -56,6 +56,7 @@ class _LifecycleManagerState extends ConsumerState<LifecycleManager> with Widget
   @override
   Widget build(BuildContext context) {
     ref.listen<String?>(notificationPayloadProvider, (previous, next) {
+      Log.d("Notification payload changed: ${next ?? 'null'}");
       if (next != null) {
         final handler = ref.read(notificationHandlerProvider);
         handler.handleNotificationPayload(next);

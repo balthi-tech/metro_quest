@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:metro_quest/core/extensions/geo_point_extension.dart';
+import 'package:metro_quest/core/theme/map_option.dart';
 import 'package:metro_quest/domain/entities/metro_line_segment_entity.dart';
 import 'package:metro_quest/domain/entities/metro_line_entity.dart';
 import 'package:metro_quest/domain/entities/metro_station_entity.dart';
@@ -63,8 +64,8 @@ class MetroMap extends ConsumerWidget {
             cameraTargetBounds: CameraTargetBounds(controller.petiteCouronneBounds),
             minMaxZoomPreference: MinMaxZoomPreference(12, 18),
             onMapCreated: controller.setMapController,
-            cloudMapId: "8b18415b1444fe7478e6da95",
-            mapType: MapType.terrain,
+            style: mapStyle,
+            // mapType: MapType.normal,
             polylines: _buildPolylines(lines),
             clusterManagers: <ClusterManager>{
               ClusterManager(

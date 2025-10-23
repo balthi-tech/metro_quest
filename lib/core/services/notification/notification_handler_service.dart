@@ -8,6 +8,11 @@ class NotificationHandlerService {
   NotificationHandlerService({required this.router});
 
   void handleNotificationPayload(String rawPayload) {
+    if (rawPayload.isEmpty) {
+      Log.d('Empty notification payload, nothing to handle.');
+      return;
+    }
+
     Log.d('Handling notification payload: $rawPayload');
 
     final payload = NotificationPayload.fromJson(rawPayload);

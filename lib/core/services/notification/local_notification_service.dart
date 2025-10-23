@@ -46,7 +46,7 @@ class NotificationService {
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
         // response.notificationResponseType
         final payload = response.payload;
-        if (payload != null) {
+        if (payload != null && payload.isNotEmpty) {
           Log.d('Notification payload: $payload');
 
           onNotificationResponse(payload);

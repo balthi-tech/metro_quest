@@ -1,48 +1,55 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MetroLineColors {
-  static const Map<String, int> lineColorMap = {
-    '1': 0xFFFFCE00,
-    '2': 0xFF0064B0,
-    '3': 0xFF9F9825,
-    '3B': 0xFF98D4E2,
-    '4': 0xFFC04191,
-    '5': 0xFFF28E42,
-    '6': 0xFF83C491,
-    '7': 0xFFF3A4BA,
-    '7B': 0xFF83C491,
-    '8': 0xFFCEADD2,
-    '9': 0xFFD5C900,
-    '10': 0xFFE3B32A,
-    '11': 0xFF8D5E2A,
-    '12': 0xFF00814F,
-    '13': 0xFF98D4E2,
-    '14': 0xFF662483,
-    // '15': 0xFFB90845,
-    // '16': 0xFFF3A4BA,
-    // '17': 0xFFD5C900,
-    // '18': 0xFF00A88F,
-  };
+  static double getColorHueFromColor(Color? lineColor) {
+    final hslColor = HSLColor.fromColor(lineColor ?? Colors.black);
 
-  static Color getColorForLine(String lineId) {
-    final colorValue = lineColorMap[lineId];
-    if (colorValue != null) {
-      return Color(colorValue);
-    } else {
-      return Colors.grey; // Default color if lineId not found
-    }
+    return hslColor.hue;
   }
 
-  static double getColorHueForLine(String lineId) {
-    final colorValue = lineColorMap[lineId];
-    if (colorValue != null) {
-      final color = getColorForLine(lineId);
+  static Future<BitmapDescriptor> createStyledMarker(Color color, {int size = 100}) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
 
-      final hslColor = HSLColor.fromColor(color);
+    final center = Offset(size / 2, size / 2);
+    final radius = size / 2;
 
-      return hslColor.hue;
-    } else {
-      return 0.0; // Default hue if lineId not found
+    // Fond dégradé radial du cercle (du blanc au color)
+    final gradient = RadialGradient(
+      colors: [color.withValues(alpha: 0.9), color],
+    );
+
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    final paint = Paint()..shader = gradient.createShader(rect);
+
+    // Cercle principal avec dégradé
+    canvas.drawCircle(center, radius, paint);
+
+    // Cercle intérieur lumineux
+    final innerCirclePaint = Paint()..color = Colors.white.withValues(alpha: 0.4);
+
+    canvas.drawCircle(center, radius * 0.5, innerCirclePaint);
+
+    // Bordure blanche
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size * 0.1;
+
+    canvas.drawCircle(center, radius - borderPaint.strokeWidth / 2, borderPaint);
+
+    // Fin du dessin
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(size, size);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+
+    if (byteData == null) {
+      throw Exception('Erreur lors de la création du marker');
     }
+
+    final pngBytes = byteData.buffer.asUint8List();
+    return BitmapDescriptor.bytes(pngBytes);
   }
 }

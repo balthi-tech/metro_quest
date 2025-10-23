@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:metro_quest/core/utils/log.dart';
 import 'package:metro_quest/domain/entities/metro_station_filter_criteria.dart';
 import 'package:metro_quest/domain/entities/notification_payload.dart';
 import 'package:metro_quest/features/open_in_map/presentation/widgets/open_in_map_button.dart';
@@ -61,6 +62,8 @@ class _StationDetailPageState extends ConsumerState<StationDetailPage> {
                 SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
+                    Log.d(station.geoPoint.toString());
+
                     // Trigger a test proximity notification
                     ref
                         .read(notificationServiceProvider)

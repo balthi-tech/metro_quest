@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,21 +10,23 @@ import 'package:metro_quest/core/extensions/geo_point_extension.dart';
 import 'package:metro_quest/core/router/app_router.dart';
 import 'package:metro_quest/core/theme/metro_line_colors.dart';
 import 'package:metro_quest/core/utils/log.dart';
+import 'package:metro_quest/domain/entities/metro_line_entity.dart';
 import 'package:metro_quest/domain/entities/metro_station_entity.dart';
 import 'package:metro_quest/domain/entities/metro_station_filter_criteria.dart';
 import 'package:metro_quest/features/active_navigation/logic/active_navigation_provider.dart';
+import 'package:metro_quest/features/lines/logic/line_provider.dart';
 import 'package:metro_quest/features/station/logic/station_provider.dart';
 import 'package:metro_quest/shared/providers/local_notification_service_provider.dart';
 import 'package:metro_quest/shared/providers/location_service_provider.dart';
 
 class MetroMapState {
-  final Set<String> selectedLines;
+  final Set<MetroLine> selectedLines;
   final Set<Marker> markers;
 
   MetroMapState({required this.selectedLines, required this.markers});
 
   MetroMapState copyWith({
-    Set<String>? selectedLines,
+    Set<MetroLine>? selectedLines,
     Set<Marker>? markers,
   }) {
     return MetroMapState(
@@ -36,7 +39,7 @@ class MetroMapState {
 class MetroMapController extends AsyncNotifier<MetroMapState> {
   final List<MetroStation> stations;
 
-  MetroMapController(this.stations);
+  MetroMapController({required this.stations});
 
   GoogleMapController? mapController;
   final LatLngBounds petiteCouronneBounds = LatLngBounds(
@@ -60,11 +63,28 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     initialPosition = positionLatLng;
     currentPosition = positionLatLng;
 
-    final allLines = MetroLineColors.lineColorMap.keys.toSet();
+    final lines = await ref.watch(lineControllerProvider.future);
+
+    // generate an icon for each line, and save it in a map on line id
+
+    final Map<String, BitmapDescriptor> lineIcons = await Future.wait(
+      lines.map((line) async {
+        final icon = await MetroLineColors.createStyledMarker(
+          line.color,
+          size: 40,
+        );
+        return MapEntry(line.id, icon);
+      }),
+    ).then((entries) => Map.fromEntries(entries));
+
+    final defaultIcon = await MetroLineColors.createStyledMarker(
+      Colors.grey,
+      size: 40,
+    );
 
     return MetroMapState(
-      selectedLines: allLines,
-      markers: _buildMarkers(selectedLines: allLines),
+      selectedLines: lines.toSet(),
+      markers: _buildMarkers(selectedLines: lines.toSet(), lineIcons: lineIcons, defaultIcon: defaultIcon),
     );
   }
 
@@ -90,36 +110,6 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     ref.read(activeNavigationProvider.notifier).stopNavigation();
   }
 
-  // Future<List<MetroStation>> sortStationByDistanceFromMe() async {
-  //   // return list of stations sorted by distance from current position with the distance calculated in kilometers
-
-  //   final currentPosition = await _locationService.getCurrentPosition();
-
-  //   stations.sort((a, b) {
-  //     final distA = DistanceCalculator.calculateDistance(currentPosition, a.geoPoint);
-  //     final distB = DistanceCalculator.calculateDistance(currentPosition, b.geoPoint);
-
-  //     return distA.compareTo(distB);
-  //   });
-
-  //   return stations;
-  // }
-
-  // return Tuple of station and distance in kilometers from current position
-
-  // Future<List<MapEntry<MetroStation, double>>> getStationsWithDistanceFromMe() async {
-  //   final currentPosition = await _locationService.getCurrentPosition();
-
-  //   final stationsWithDistance = stations.map((station) {
-  //     final distance = DistanceCalculator.calculateDistance(currentPosition, station.geoPoint);
-  //     return MapEntry(station, distance);
-  //   }).toList();
-
-  //   stationsWithDistance.sort((a, b) => a.value.compareTo(b.value));
-
-  //   return stationsWithDistance;
-  // }
-
   void _onInfoWindowTap(MarkerId markerId) {
     Log.d('Info window tapped for markerId: ${markerId.value}');
     // display some info or navigate to another screen
@@ -136,8 +126,16 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     // Here you can navigate to another screen or display more information about the station
   }
 
-  Set<Marker> _buildMarkers({required Set<String> selectedLines}) {
-    return stations.where((station) => selectedLines.contains(station.lineName)).map((station) {
+  Set<Marker> _buildMarkers({
+    required Set<MetroLine> selectedLines,
+    required Map<String, BitmapDescriptor> lineIcons,
+    required BitmapDescriptor defaultIcon,
+  }) {
+    final filteredStations = stations.where((station) => selectedLines.any((line) => line.id == station.lineId));
+
+    return filteredStations.map((station) {
+      bool isVisitedStation = station.visited;
+
       final markerId = MarkerId(station.id);
 
       return Marker(
@@ -149,9 +147,14 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
           onTap: () => _onInfoWindowTap(markerId),
         ),
         clusterManagerId: ClusterManagerId("metro_stations"),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          MetroLineColors.getColorHueForLine(station.lineName),
-        ),
+        icon: isVisitedStation ? (lineIcons[station.lineId] ?? defaultIcon) : defaultIcon,
+
+        onDrag: (value) {
+          Log.d('Marker dragged to $value');
+        },
+        onDragStart: (value) => Log.d('Marker drag started at $value'),
+        onDragEnd: (value) => Log.d('Marker drag ended at $value'),
+
         onTap: () {
           // You can handle marker tap if needed
           if (Platform.isAndroid) {
@@ -167,14 +170,14 @@ class MetroMapController extends AsyncNotifier<MetroMapState> {
     mapController = controller;
   }
 
-  Future<void> onUpdateSelectedLines(Set<String> lines) async {
-    state = AsyncValue.data(
-      state.value!.copyWith(
-        selectedLines: lines,
-        markers: _buildMarkers(selectedLines: lines),
-      ),
-    );
-  }
+  // Future<void> onUpdateSelectedLines(Set<MetroLine> lines) async {
+  //   state = AsyncValue.data(
+  //     state.value!.copyWith(
+  //       selectedLines: lines,
+  //       markers: _buildMarkers(selectedLines: lines),
+  //     ),
+  //   );
+  // }
 
   Future<void> goToPonderedRandomStation() async {
     if (mapController == null) {

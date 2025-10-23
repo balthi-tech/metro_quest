@@ -5,5 +5,17 @@ import 'package:metro_quest/features/metro_map/logic/metro_map_controller.dart';
 final metroMapControllerProvider = AsyncNotifierProvider.family<MetroMapController, MetroMapState, List<MetroStation>>((
   List<MetroStation> stations,
 ) {
-  return MetroMapController(stations);
+  return MetroMapController(stations: stations);
 });
+
+
+
+// final metroMapControllerProvider = AsyncNotifierProvider.family<MetroMapController, MetroMapState, List<MetroStation>>(
+//   (stations, ref) async {
+//     // Lire un autre provider ici via ref
+//     final allLines = ref.read(allLinesProvider); // exemple
+
+//     // Crée une instance avec stations ET allLines
+//     return MetroMapController(stations, allLines);
+//   },
+// );

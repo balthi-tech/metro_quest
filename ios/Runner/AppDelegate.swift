@@ -8,6 +8,11 @@ import GoogleMaps
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // Flutter local notifications setup
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+    }
+    // Google Maps setup
     GMSServices.provideAPIKey("AIzaSyB4Ak7G_FEmxt9zmCkudnrMUsvFyr-qxtU")  // Mettez votre clé correctement
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

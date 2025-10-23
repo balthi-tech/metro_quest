@@ -22,3 +22,7 @@ samples, guidance on mobile development, and a full API reference.
 ## Dictionaire
 
 - DTO -> “Data Transfer Object” : données brutes reçues d’une API, d'une source externe ou fichier local
+
+## Log filters Android
+
+!I/,!D/,!W/

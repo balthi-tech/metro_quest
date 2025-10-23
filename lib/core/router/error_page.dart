@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ErrorPage extends StatelessWidget {
-  const ErrorPage({super.key});
+  final String? unknownRoute;
+  const ErrorPage({super.key, this.unknownRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,7 @@ class ErrorPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'The page you are looking for does not exist.',
+              'The page ${unknownRoute ?? ''} you are looking for does not exist.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18),
             ),

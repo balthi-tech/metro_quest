@@ -63,7 +63,13 @@ final routerProvider = Provider<GoRouter>(
           },
         ),
       ],
-      errorPageBuilder: (context, state) => MaterialPage(child: ErrorPage()),
+      errorPageBuilder: (context, state) {
+        return MaterialPage(
+          child: ErrorPage(
+            unknownRoute: state.uri.toString(),
+          ),
+        );
+      },
     );
   },
 );

@@ -6,6 +6,7 @@ import 'package:metro_quest/core/extensions/geo_point_extension.dart';
 import 'package:metro_quest/domain/entities/metro_line_segment_entity.dart';
 import 'package:metro_quest/domain/entities/metro_line_entity.dart';
 import 'package:metro_quest/domain/entities/metro_station_entity.dart';
+import 'package:metro_quest/features/active_navigation/logic/active_navigation_provider.dart';
 import 'package:metro_quest/features/lines/logic/line_provider.dart';
 import 'package:metro_quest/features/metro_map/logic/metro_map_controller.dart';
 import 'package:metro_quest/features/metro_map/logic/metro_map_provider.dart';
@@ -19,6 +20,7 @@ class MetroMap extends ConsumerWidget {
     final asyncState = ref.watch(metroMapControllerProvider(stations));
     final lineAsyncState = ref.watch(lineControllerProvider);
     final controller = ref.read(metroMapControllerProvider(stations).notifier);
+    final activeStation = ref.watch(activeNavigationProvider);
 
     return asyncState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -27,14 +29,21 @@ class MetroMap extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (lines) {
-          return _buildMap(state, controller, lines, context);
+          return _buildMap(state, controller, lines, context, activeStation);
         },
       ),
     );
   }
 
-  Widget _buildMap(MetroMapState state, MetroMapController controller, List<MetroLine> lines, BuildContext context) {
+  Widget _buildMap(
+    MetroMapState state,
+    MetroMapController controller,
+    List<MetroLine> lines,
+    BuildContext context,
+    MetroStation? activeStation,
+  ) {
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           controller.goToPonderedRandomStation();
@@ -47,6 +56,8 @@ class MetroMap extends ConsumerWidget {
           GoogleMap(
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            mapToolbarEnabled: false,
             markers: state.markers,
             initialCameraPosition: CameraPosition(target: controller.initialPosition, zoom: 15),
             cameraTargetBounds: CameraTargetBounds(controller.petiteCouronneBounds),
@@ -65,10 +76,41 @@ class MetroMap extends ConsumerWidget {
             },
           ),
 
-          Text('Lines: ${lines.length}'),
+          if (activeStation != null)
+            Positioned(
+              child: Container(
+                height: 80,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.7),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Icon(Icons.train, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'En navigation vers : ${activeStation.name}',
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    IconButton(
+                      onPressed: () {
+                        controller.cancelNavigation();
+                      },
+                      icon: Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
           Positioned(
-            top: 10,
+            top: 100,
             right: 10,
             child: Column(
               children: [

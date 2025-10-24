@@ -65,14 +65,10 @@ class MetroMap extends ConsumerWidget {
             minMaxZoomPreference: MinMaxZoomPreference(12, 18),
             onMapCreated: controller.setMapController,
             style: mapStyle,
-            // mapType: MapType.normal,
             polylines: _buildPolylines(lines),
             clusterManagers: <ClusterManager>{
               ClusterManager(
                 clusterManagerId: ClusterManagerId("metro_stations"),
-                onClusterTap: (cluster) {
-                  // print('Cluster tapped: contains ${cluster.count} items');
-                },
               ),
             },
           ),
@@ -146,21 +142,22 @@ class MetroMap extends ConsumerWidget {
     );
   }
 
-  Polyline _buildLineSegment(MetroLineSegment segment, Color color) {
+  Polyline _buildLineSegment(MetroLineSegment segment, MetroLine line) {
     final points = segment.coordinates.map((coord) {
       return coord.toLatLng();
     }).toList();
 
     return Polyline(
       polylineId: PolylineId('${segment.hashCode}'),
-      color: color,
+      color: line.color,
       width: 4,
       points: points,
+      consumeTapEvents: true,
     );
   }
 
   List<Polyline> _buildFullLine(MetroLine line) {
-    return line.lineTrace.segments.map((segment) => _buildLineSegment(segment, line.color)).toList();
+    return line.lineTrace.segments.map((segment) => _buildLineSegment(segment, line)).toList();
   }
 
   Set<Polyline> _buildPolylines(List<MetroLine> lines) {

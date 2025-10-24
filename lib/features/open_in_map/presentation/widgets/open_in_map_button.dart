@@ -3,14 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:metro_quest/core/services/map/map_navigation_service.dart';
 import 'package:metro_quest/core/utils/log.dart';
-import 'package:metro_quest/domain/entities/metro_station_entity.dart';
-import 'package:metro_quest/features/active_navigation/logic/active_navigation_controller.dart';
-import 'package:metro_quest/features/active_navigation/logic/active_navigation_provider.dart';
+import 'package:metro_quest/domain/entities/geo_point_entity.dart';
 import 'package:metro_quest/shared/providers/map_navigation_service_provider.dart';
 
 class OpenInMapButton extends ConsumerStatefulWidget {
-  final MetroStation station;
-  const OpenInMapButton({super.key, required this.station});
+  final String destinationTitle;
+  final GeoPoint geoPoint;
+  final VoidCallback? onMapLaunched;
+
+  const OpenInMapButton({super.key, required this.destinationTitle, required this.geoPoint, this.onMapLaunched});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _OpenInMapButtonState();
@@ -25,22 +26,21 @@ class _OpenInMapButtonState extends ConsumerState<OpenInMapButton> {
   List<Widget> _buildMapOptions({
     required MapNavigationService mapNavigationService,
     required List<AvailableMap> maps,
-    required ActiveNavigationNotifier activeNotifier,
   }) {
     return maps
         .map(
           (map) => ListTile(
             title: Text(map.mapName),
             onTap: () async {
-              activeNotifier.startNavigationTo(widget.station);
+              widget.onMapLaunched?.call();
 
               mapNavigationService.launchDirections(
-                destinationTitle: widget.station.name,
+                destinationTitle: widget.destinationTitle,
                 map: map,
-                geoPoint: widget.station.geoPoint,
+                geoPoint: widget.geoPoint,
               );
 
-              Log.d('${widget.station.name} Info: ${widget.station.geoPoint}');
+              Log.d('Lancement de la navigation vers ${widget.destinationTitle} dans ${map.mapName}');
               Navigator.of(context).pop();
             },
           ),
@@ -50,10 +50,6 @@ class _OpenInMapButtonState extends ConsumerState<OpenInMapButton> {
 
   void _openInMap() {
     final mapNavigationService = ref.read(mapNavigationServiceProvider);
-
-    // active
-
-    final activeNotifier = ref.read(activeNavigationProvider.notifier);
 
     showModalBottomSheet(
       context: context,
@@ -77,7 +73,6 @@ class _OpenInMapButtonState extends ConsumerState<OpenInMapButton> {
                         children: _buildMapOptions(
                           mapNavigationService: mapNavigationService,
                           maps: maps,
-                          activeNotifier: activeNotifier,
                         ),
                       ),
                     );

@@ -44,6 +44,20 @@ dependencies:
   flutter_svg: ^2.2.1
   flutter_local_notifications: ^19.5.0
   flutter_background_geolocation: ^4.18.0
+  dio: ^5.9.0
+  flutter_dotenv: ^6.0.0
+  # location: ^8.0.1 // TODO: replace geolocator with this package? replace flutter_background_geolocation with this package?
+  # https://pub.dev/packages/location/install
+
+  
+  
+
+  # For getting directions and itineraries
+  # https://tuto-flutter.fr/coder-avec-flutter/google-maps/tracer-itineraire
+
+  # For drawing polylines on Google Maps for itineroutes
+  #  https://pub.dev/packages/flutter_polyline_points
+  # flutter_polyline_points 3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +85,8 @@ flutter:
   assets:
     - assets/data/
     - assets/data/metro/paris/
+    # .env file
+    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:
